@@ -1,14 +1,11 @@
-import torch.nn as nn
-import torch
 from model.block import *
 
 
 class ESRGAN(nn.Module):
-    def __init__(self, in_channels, out_channels,nf, gc=32,kernel_size=3, stride=1, dilation=1, groups=1, bias=True,
+    def __init__(self, in_channels, out_channels, nf, gc=32, kernel_size=3, stride=1, dilation=1, groups=1, bias=True,
                  res_scale=0.2, act_type='leakyrelu', last_act=None, pad_type='reflection', norm_type=None,
                  negative_slope=0.2, n_prelu=1, inplace=True, scale_facter=2, mode='nearest', n_basic_block=5):
         super(ESRGAN, self).__init__()
-        n_padding = get_n_padding(kernel_size, dilation)
 
         self.conv1 = conv_block(in_channels, nf, kernel_size, stride, dilation, groups, bias, act_type, pad_type,
                        norm_type, negative_slope, n_prelu, inplace)
@@ -25,7 +22,7 @@ class ESRGAN(nn.Module):
         self.conv2 = conv_block(nf, nf, kernel_size, stride, dilation, groups, bias, act_type, pad_type,
                        norm_type, negative_slope, n_prelu, inplace)
 
-        self.upsample = upsample_block(nf, nf)
+        self.upsample = upsample_block(nf, nf, scale_facter=scale_facter)
         self.conv3 = conv_block(nf, nf, kernel_size, stride, dilation, groups, bias, act_type, pad_type,
                        norm_type, negative_slope, n_prelu, inplace)
         self.conv4 = conv_block(nf, out_channels, kernel_size, stride, dilation, groups, bias, act_type, pad_type,

@@ -49,9 +49,9 @@ def get_n_padding(kernel_size, dilation):
 
 def conv_block(in_channels, out_channels, kernel_size=3, stride=1, dilation=1, groups=1, bias=True,
                act_type='leakyrelu', pad_type='reflection', norm_type=None, negative_slope=0.2, n_prelu=1,
-               inplace=True):
-    n_pad = get_n_padding(kernel_size, dilation)
-    pad = padding(pad_type, n_pad)
+               inplace=True, n_padding=None):
+    n_pad = n_padding if n_padding else get_n_padding(kernel_size, dilation)
+    pad = padding(pad_type, n_pad) if pad_type else None
     conv = nn.Conv2d(in_channels, out_channels, kernel_size, stride, 0, dilation, groups, bias)
     norm = normalization(norm_type, out_channels) if norm_type else None
     act = activation(act_type, inplace=inplace, negative_slope=negative_slope, n_prelu=n_prelu) if act_type else None
