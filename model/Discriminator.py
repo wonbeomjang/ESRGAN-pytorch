@@ -2,9 +2,9 @@ import torch.nn as nn
 from model.block import conv_block
 
 
-class Discriminator(nn.Module):
+class SubDiscriminator(nn.Module):
     def __init__(self, act_type='leackyrelu', num_conv_block=7):
-        super(Discriminator, self).__init__()
+        super(SubDiscriminator, self).__init__()
 
         block = []
 
@@ -27,10 +27,22 @@ class Discriminator(nn.Module):
             nn.Conv2d(in_channels, out_channels, 1),
             nn.LeakyReLU(0.2),
             nn.Conv2d(out_channels, 1, 1),
-            nn.Sigmoid()
         )
 
     def forward(self, x):
         x = self.feature_extraction(x)
         x = self.classification(x)
         return x
+
+
+class Discriminator(nn.Module):
+    def __init__(self):
+        super(Discriminator, self).__init__()
+        self.discriminator_a = SubDiscriminator()
+        self.discriminator_b = SubDiscriminator()
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, a, b):
+        a = self.discriminator_a(a)
+        b = self.discriminator_b(b)
+        return self.sigmoid(a - b)

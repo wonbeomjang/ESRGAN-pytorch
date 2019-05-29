@@ -1,5 +1,5 @@
 import torch
-import torch.nn as nn
+from loss.loss import GeneratorLoss, DiscriminatorLoss
 from torch.optim.adam import Adam
 from model.ESRGAN import ESRGAN
 from model.Discriminator import Discriminator
@@ -39,7 +39,8 @@ class Trainer:
         total_step = len(self.data_loader)
         optimizer_generator = Adam(self.generator.parameters(), lr=self.lr).to(self.device)
         optimizer_discriminator = Adam(self.discriminator.parameters(), lr=self.lr).to(self.device)
-        adversarial_loss = nn.BCELoss().to(self.device)
+        discriminator_criterion = DiscriminatorLoss().to(self.device)
+        generator_criterion = GeneratorLoss().to(self.device)
         self.generator.train()
         self.discriminator.train()
 
@@ -51,19 +52,24 @@ class Trainer:
                 low_resolution = image['lr'].to(self.device)
                 high_resolution = image['hr'].to(self.device)
 
-                valid = Variable(self.Tensor(high_resolution.size(0), 1).fill_(1.0), requires_grad=False).to(self.device)
-                fake = Variable(self.Tensor(high_resolution.size(0), 1).fill_(0.0), requires_grad=False).to(self.device)
+                valid = Variable(self.Tensor(high_resolution.size(0), 1).fill_(1.0), requires_grad=False).to(
+                    self.device)
 
+                # update generator
                 fake_high_resolution = self.generator(low_resolution)
-                generator_loss = adversarial_loss(self.discriminator(fake_high_resolution), valid)
+                discriminator_rf = self.discriminator(high_resolution, fake_high_resolution)
+                discriminator_fr = self.discriminator(fake_high_resolution, high_resolution)
+                generator_loss = generator_criterion(discriminator_rf, discriminator_fr)
 
                 optimizer_generator.zero_grad()
                 generator_loss.backward()
                 optimizer_generator.step()
 
-                real_loss = adversarial_loss(self.discriminator(high_resolution), valid)
-                fake_loss = adversarial_loss(self.discriminator(fake_high_resolution), fake)
-                discriminator_loss = (real_loss + fake_loss) / 2
+                # update discriminator
+                discriminator_rf = self.discriminator(high_resolution, fake_high_resolution)
+                discriminator_fr = self.discriminator(fake_high_resolution, high_resolution)
+
+                discriminator_loss = discriminator_criterion(discriminator_rf, discriminator_fr)
 
                 optimizer_discriminator.zero_grad()
                 discriminator_loss.backward()
