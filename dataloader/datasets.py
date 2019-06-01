@@ -1,11 +1,11 @@
-import torch.utils.data
+from torch.utils.data import Dataset
 from PIL import Image
 import os
 from glob import glob
 from torchvision import transforms
 
 
-class Datasets(torch.utils.data.Dataset):
+class Datasets(Dataset):
     def __init__(self, data_dir, image_size, scale):
         self.data_dir = data_dir
         self.image_size = image_size
@@ -14,7 +14,7 @@ class Datasets(torch.utils.data.Dataset):
         if not os.path.exists(data_dir):
             raise Exception(f"[!] {self.data_dir} not exitd")
 
-        self.image_path = sorted(glob(self.data_dir))
+        self.image_path = sorted(glob(os.path.join(self.data_dir, "*.*")))
 
     def __getitem__(self, item):
         image = self.image_path[item]
@@ -29,10 +29,9 @@ class Datasets(torch.utils.data.Dataset):
         low_resolution = transform(image)
         hight_resolution = image
 
-        image['lr'] = low_resolution
-        image['hr'] = hight_resolution
+        _image = {'lr': low_resolution, 'hr': hight_resolution}
 
-        return image
+        return _image
 
     def __len__(self):
-        len(self.image_path)
+        return len(self.image_path)

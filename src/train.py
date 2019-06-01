@@ -31,9 +31,9 @@ class Trainer:
         self.batch_size = config.batch_size
         self.sample_dir = config.sample_dir
         self.nf = config.nf
-        self.build_model()
         self.Tensor = torch.cuda.is_available()
         self.scale_factor = config.scale_factor
+        self.build_model()
 
     def train(self):
         total_step = len(self.data_loader)

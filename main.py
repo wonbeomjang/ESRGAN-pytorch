@@ -14,7 +14,7 @@ def main(config):
     if not os.path.exists(config.sample_dir):
         os.makedirs(config.sample_dir)
 
-    print(f"{config.from_style} to {config.to_style} CycleGAN")
+    print(f"ESRGAN start")
 
     data_loader, val_data_loader = get_loader(config.data_dir, config.image_size, config.scale_factor,
                                               config.batch_size, config.sample_batch_size)

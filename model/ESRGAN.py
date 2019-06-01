@@ -13,9 +13,9 @@ class ESRGAN(nn.Module):
         basic_block_layer = []
 
         for _ in range(n_basic_block):
-            basic_block_layer += ResidualInResidualDenseBlock(nf, gc, kernel_size, stride, dilation, groups,
+            basic_block_layer += [ResidualInResidualDenseBlock(nf, gc, kernel_size, stride, dilation, groups,
                                                               bias, res_scale, act_type, last_act, pad_type, norm_type,
-                                                              negative_slope, n_prelu, inplace)
+                                                              negative_slope, n_prelu, inplace)]
 
         self.basic_block = nn.Sequential(*basic_block_layer)
 

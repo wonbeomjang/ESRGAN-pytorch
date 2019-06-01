@@ -3,7 +3,7 @@ from model.block import conv_block
 
 
 class SubDiscriminator(nn.Module):
-    def __init__(self, act_type='leackyrelu', num_conv_block=7):
+    def __init__(self, act_type='leakyrelu', num_conv_block=7):
         super(SubDiscriminator, self).__init__()
 
         block = []
