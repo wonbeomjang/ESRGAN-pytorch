@@ -37,8 +37,8 @@ class Trainer:
 
     def train(self):
         total_step = len(self.data_loader)
-        optimizer_generator = Adam(self.generator.parameters(), lr=self.lr).to(self.device)
-        optimizer_discriminator = Adam(self.discriminator.parameters(), lr=self.lr).to(self.device)
+        optimizer_generator = Adam(self.generator.parameters(), lr=self.lr)
+        optimizer_discriminator = Adam(self.discriminator.parameters(), lr=self.lr)
         discriminator_criterion = DiscriminatorLoss().to(self.device)
         generator_criterion = GeneratorLoss().to(self.device)
         self.generator.train()
@@ -52,8 +52,6 @@ class Trainer:
                 low_resolution = image['lr'].to(self.device)
                 high_resolution = image['hr'].to(self.device)
 
-                valid = Variable(self.Tensor(high_resolution.size(0), 1).fill_(1.0), requires_grad=False).to(
-                    self.device)
 
                 # update generator
                 fake_high_resolution = self.generator(low_resolution)

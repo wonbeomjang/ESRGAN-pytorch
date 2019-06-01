@@ -29,6 +29,7 @@ class ESRGAN(nn.Module):
                        norm_type, negative_slope, n_prelu, inplace)
 
     def forward(self, x):
+        print(self.conv1)
         x1 = self.conv1(x)
         x2 = self.basic_block(x1)
         x3 = self.conv2(x2)

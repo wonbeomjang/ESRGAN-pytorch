@@ -20,16 +20,22 @@ class Datasets(Dataset):
         image = self.image_path[item]
         image = Image.open(image).convert('RGB')
 
-        transform = transforms.Compose([
+        transform_low_resolution = transforms.Compose([
             transforms.CenterCrop(min(image.size[0], image.size[1])),
             transforms.Resize(self.image_size // self.scale),
             transforms.ToTensor(),
         ])
 
-        low_resolution = transform(image)
-        hight_resolution = image
+        transform_high_resolution = transforms.Compose([
+            transforms.CenterCrop(min(image.size[0], image.size[1])),
+            transforms.Resize(self.image_size // self.scale),
+            transforms.ToTensor(),
+        ])
 
-        _image = {'lr': low_resolution, 'hr': hight_resolution}
+        low_resolution = transform_low_resolution(image)
+        high_resolution = transform_high_resolution(image)
+
+        _image = {'lr': low_resolution, 'hr': high_resolution}
 
         return _image
 

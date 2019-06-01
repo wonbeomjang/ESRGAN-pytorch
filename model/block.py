@@ -55,7 +55,14 @@ def conv_block(in_channels, out_channels, kernel_size=3, stride=1, dilation=1, g
     conv = nn.Conv2d(in_channels, out_channels, kernel_size, stride, 0, dilation, groups, bias)
     norm = normalization(norm_type, out_channels) if norm_type else None
     act = activation(act_type, inplace=inplace, negative_slope=negative_slope, n_prelu=n_prelu) if act_type else None
-    return nn.Sequential(pad, conv, norm, act)
+    if (norm is None) and (act_type is None):
+        return nn.Sequential(pad, conv)
+    if pad_type is None:
+        return nn.Sequential(conv, act)
+    if norm is None:
+        return nn.Sequential(pad, conv, act)
+    else:
+        return nn.Sequential(pad, conv, norm, act)
 
 
 class ResidualDenseBlock(nn.Module):
@@ -78,10 +85,10 @@ class ResidualDenseBlock(nn.Module):
 
     def forward(self, x):
         layer1 = self.layer1(x)
-        layer2 = self.layer2(torch.cat(x, layer1), 1)
-        layer3 = self.layer3(torch.cat(x, layer1, layer2), 1)
-        layer4 = self.layer4(torch.cat(x, layer1, layer2, layer3), 1)
-        layer5 = self.layer5(torch.cat(x, layer1, layer2, layer3, layer4), 1)
+        layer2 = self.layer2(torch.cat((x, layer1), 1))
+        layer3 = self.layer3(torch.cat((x, layer1, layer2), 1))
+        layer4 = self.layer4(torch.cat((x, layer1, layer2, layer3), 1))
+        layer5 = self.layer5(torch.cat((x, layer1, layer2, layer3, layer4), 1))
         return layer5.mul(self.res_scale) + x
 
 
