@@ -28,7 +28,7 @@ class Datasets(Dataset):
 
         transform_high_resolution = transforms.Compose([
             transforms.CenterCrop(min(image.size[0], image.size[1])),
-            transforms.Resize(self.image_size // self.scale),
+            transforms.Resize(self.image_size),
             transforms.ToTensor(),
         ])
 

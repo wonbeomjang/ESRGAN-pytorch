@@ -33,14 +33,17 @@ class Trainer:
         self.nf = config.nf
         self.Tensor = torch.cuda.is_available()
         self.scale_factor = config.scale_factor
+        self.b1 = config.b1
+        self.b2 = config.b2
         self.build_model()
+
 
     def train(self):
         total_step = len(self.data_loader)
-        optimizer_generator = Adam(self.generator.parameters(), lr=self.lr)
-        optimizer_discriminator = Adam(self.discriminator.parameters(), lr=self.lr)
-        discriminator_criterion = DiscriminatorLoss().to(self.device)
+        optimizer_generator = Adam(self.generator.parameters(), lr=self.lr, betas=(self.b1, self.b2))
+        optimizer_discriminator = Adam(self.discriminator.parameters(), lr=self.lr, betas=(self.b1, self.b2))
         generator_criterion = GeneratorLoss().to(self.device)
+        discriminator_criterion = DiscriminatorLoss().to(self.device)
         self.generator.train()
         self.discriminator.train()
 
@@ -57,10 +60,10 @@ class Trainer:
                 fake_high_resolution = self.generator(low_resolution)
                 discriminator_rf = self.discriminator(high_resolution, fake_high_resolution)
                 discriminator_fr = self.discriminator(fake_high_resolution, high_resolution)
-                generator_loss = generator_criterion(discriminator_rf, discriminator_fr)
+                generator_loss = generator_criterion(discriminator_rf, discriminator_fr, high_resolution, fake_high_resolution)
 
                 optimizer_generator.zero_grad()
-                generator_loss.backward()
+                generator_loss.backward(retain_graph=True)
                 optimizer_generator.step()
 
                 # update discriminator
@@ -70,12 +73,12 @@ class Trainer:
                 discriminator_loss = discriminator_criterion(discriminator_rf, discriminator_fr)
 
                 optimizer_discriminator.zero_grad()
-                discriminator_loss.backward()
+                discriminator_loss.backward(retain_graph=True)
                 optimizer_discriminator.step()
 
-                if step % 10 == 0:
+                if step % 1 == 0:
                     print(f"[Epoch {epoch}/{self.num_epoch}] [Batch {step}/{total_step}] "
-                          f"[D loss {discriminator_loss}] [G loss {generator_loss}]")
+                          f"[D loss {discriminator_loss.item()}] [G loss {generator_loss.item()}]")
                     if step % 50 == 0:
                         result = torch.cat((high_resolution, fake_high_resolution), 2)
                         save_image(result, os.path.join(self.sample_dir, str(epoch), f"SR_{step}.png"))
@@ -86,7 +89,7 @@ class Trainer:
                                                                  f"discriminator_{epoch}.pth"))
 
     def build_model(self):
-        self.generator = ESRGAN(3, 3, 64, scale_facter=self.scale_factor).to(self.device)
+        self.generator = ESRGAN(3, 3, 64, scale_factor=self.scale_factor).to(self.device)
         self.discriminator = Discriminator().to(self.device)
         self.load_model()
 

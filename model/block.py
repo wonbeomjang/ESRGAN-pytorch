@@ -114,8 +114,14 @@ class ResidualInResidualDenseBlock(nn.Module):
 
 def upsample_block(in_channels, out_channels, kernel_size=3, stride=1, dilation=1, groups=1, bias=True,
                  act_type='relu', pad_type='reflection', norm_type=None, negative_slope=0.2, n_prelu=1, inplace=True,
-                 scale_facter=2, mode='nearest'):
-        up_layer = nn.Upsample(scale_factor=scale_facter, mode=mode)
-        conv = conv_block(in_channels, out_channels, kernel_size, stride, dilation, groups, bias, act_type,
-                               pad_type, norm_type, negative_slope, n_prelu, inplace)
-        return nn.Sequential(up_layer, conv)
+                 scale_factor=2):
+        conv = conv_block(in_channels, out_channels * (scale_factor ** 2), kernel_size, stride, dilation, groups, bias,
+                          act_type, pad_type, norm_type, negative_slope, n_prelu, inplace)
+
+        pixel_shuffle = nn.PixelShuffle(scale_factor)
+        n = normalization(norm_type, out_channels) if norm_type else None
+        a = activation(act_type) if act_type else None
+        if norm_type is not None:
+            return nn.Sequential(conv, pixel_shuffle, n, a)
+        else:
+            return nn.Sequential(conv, pixel_shuffle, a)
