@@ -1,4 +1,5 @@
 from src.train import Trainer
+from src.test import Tester
 from dataloader.dataloader import get_loader
 import os
 from config.config import get_config
@@ -20,6 +21,9 @@ def main(config):
                                               config.batch_size, config.sample_batch_size)
     trainer = Trainer(config, data_loader)
     trainer.train()
+
+    tester = Tester(config, val_data_loader)
+    tester.test()
 
 
 if __name__ == "__main__":

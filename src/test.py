@@ -5,6 +5,7 @@ import torch
 from torchvision.utils import save_image
 import torch.nn as nn
 
+
 class Tester:
     def __init__(self, config, data_loader):
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -14,7 +15,8 @@ class Tester:
         self.sample_dir = config.sample_dir
         self.num_epoch = config.num_epoch
         self.image_size = config.image_size
-        self.upsampler = nn.Upsample(self.image_size, self.scale_factor)
+        self.upsampler = nn.Upsample(scale_factor=self.scale_factor, mode='bilinear')
+        self.epoch = config.epoch
         self.build_model()
 
     def test(self):
