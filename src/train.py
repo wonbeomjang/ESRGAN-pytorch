@@ -1,12 +1,13 @@
 import torch
-from loss.loss import GeneratorLoss, DiscriminatorLoss
 from torch.optim.adam import Adam
 from model.ESRGAN import ESRGAN
 from model.Discriminator import Discriminator
 import os
 from glob import glob
 from torch.autograd import Variable
+import torch.nn as nn
 from torchvision.utils import save_image
+from loss.loss import PerceptionLoss
 
 
 def weights_init(m):
@@ -42,12 +43,15 @@ class Trainer:
         total_step = len(self.data_loader)
         optimizer_generator = Adam(self.generator.parameters(), lr=self.lr, betas=(self.b1, self.b2))
         optimizer_discriminator = Adam(self.discriminator.parameters(), lr=self.lr, betas=(self.b1, self.b2))
-        generator_criterion = GeneratorLoss().to(self.device)
-        discriminator_criterion = DiscriminatorLoss().to(self.device)
+        adversarial_criterion = nn.BCELoss().to(self.device)
+        content_criterion = nn.L1Loss().to(self.device)
+        perception_criterion = PerceptionLoss().to(self.device)
         self.generator.train()
         self.discriminator.train()
 
         for epoch in range(self.epoch, self.num_epoch):
+            if not os.path.exists(os.path.join(self.checkpoint_dir, str(epoch))):
+                os.makedirs(os.path.join(self.checkpoint_dir, str(epoch)))
             if not os.path.exists(os.path.join(self.sample_dir, str(epoch))):
                 os.makedirs(os.path.join(self.sample_dir, str(epoch)))
 
@@ -55,22 +59,39 @@ class Trainer:
                 low_resolution = image['lr'].to(self.device)
                 high_resolution = image['hr'].to(self.device)
 
+                real_labels = torch.ones((high_resolution.size(0), *self.discriminator.output_shape)).to(self.device)
+                fake_labels = torch.zeros((high_resolution.size(0), *self.discriminator.output_shape)).to(self.device)
 
-                # update generator
+                #######################
+                #   train generator   #
+                #######################
                 fake_high_resolution = self.generator(low_resolution)
                 discriminator_rf = self.discriminator(high_resolution, fake_high_resolution)
                 discriminator_fr = self.discriminator(fake_high_resolution, high_resolution)
-                generator_loss = generator_criterion(discriminator_rf, discriminator_fr, high_resolution, fake_high_resolution)
+
+                adversarial_loss_rf = adversarial_criterion(discriminator_rf, fake_labels)
+                adversarial_loss_fr = adversarial_criterion(discriminator_fr, real_labels)
+                adversarial_loss = (adversarial_loss_fr + adversarial_loss_rf)/2
+
+                perception_loss = perception_criterion(high_resolution, fake_high_resolution)
+                content_loss = content_criterion(high_resolution, fake_high_resolution)
+
+                generator_loss = adversarial_loss + perception_loss*0.005 + content_loss*0.01
 
                 optimizer_generator.zero_grad()
                 generator_loss.backward(retain_graph=True)
                 optimizer_generator.step()
 
-                # update discriminator
+                #######################
+                # train discriminator #
+                #######################
                 discriminator_rf = self.discriminator(high_resolution, fake_high_resolution)
                 discriminator_fr = self.discriminator(fake_high_resolution, high_resolution)
 
-                discriminator_loss = discriminator_criterion(discriminator_rf, discriminator_fr)
+                adversarial_loss_rf = adversarial_loss(discriminator_rf, real_labels)
+                adversarial_loss_fr = adversarial_loss(discriminator_fr, fake_labels)
+
+                discriminator_loss = (adversarial_loss_rf + adversarial_loss_fr) / 2
 
                 optimizer_discriminator.zero_grad()
                 discriminator_loss.backward(retain_graph=True)
