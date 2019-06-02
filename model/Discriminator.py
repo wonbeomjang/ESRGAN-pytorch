@@ -36,11 +36,13 @@ class SubDiscriminator(nn.Module):
 
 
 class Discriminator(nn.Module):
-    def __init__(self):
+    def __init__(self, image_size):
         super(Discriminator, self).__init__()
         self.discriminator_a = SubDiscriminator()
         self.discriminator_b = SubDiscriminator()
         self.sigmoid = nn.Sigmoid()
+
+        self.output_shape = (1, image_size // 2 ** 3 - 1, image_size // 2 ** 3 - 1)
 
     def forward(self, a, b):
         a = self.discriminator_a(a)

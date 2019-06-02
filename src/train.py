@@ -88,19 +88,18 @@ class Trainer:
                 discriminator_rf = self.discriminator(high_resolution, fake_high_resolution)
                 discriminator_fr = self.discriminator(fake_high_resolution, high_resolution)
 
-                adversarial_loss_rf = adversarial_loss(discriminator_rf, real_labels)
-                adversarial_loss_fr = adversarial_loss(discriminator_fr, fake_labels)
-
-                discriminator_loss = (adversarial_loss_rf + adversarial_loss_fr) / 2
+                adversarial_loss_rf = adversarial_criterion(discriminator_rf, real_labels)
+                adversarial_loss_fr = adversarial_criterion(discriminator_fr, fake_labels)
+                discriminator_loss = (adversarial_loss_fr + adversarial_loss_rf)/2
 
                 optimizer_discriminator.zero_grad()
                 discriminator_loss.backward(retain_graph=True)
                 optimizer_discriminator.step()
 
-                if step % 1 == 0:
+                if step % 50 == 0:
                     print(f"[Epoch {epoch}/{self.num_epoch}] [Batch {step}/{total_step}] "
                           f"[D loss {discriminator_loss.item()}] [G loss {generator_loss.item()}]")
-                    if step % 50 == 0:
+                    if step % 100 == 0:
                         result = torch.cat((high_resolution, fake_high_resolution), 2)
                         save_image(result, os.path.join(self.sample_dir, str(epoch), f"SR_{step}.png"))
 
@@ -111,7 +110,7 @@ class Trainer:
 
     def build_model(self):
         self.generator = ESRGAN(3, 3, 64, scale_factor=self.scale_factor).to(self.device)
-        self.discriminator = Discriminator().to(self.device)
+        self.discriminator = Discriminator(self.image_size).to(self.device)
         self.load_model()
 
     def load_model(self):
