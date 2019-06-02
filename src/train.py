@@ -19,6 +19,10 @@ def weights_init(m):
         m.weight.data.normal_(1.0, 0.02)
         m.bias.data.fill_(0)
 
+    elif classname.find('InstanceNorm') != -1:
+        m.weight.data.normal_(1.0, 0.02)
+        m.bias.data.fill_(0)
+
 
 class Trainer:
     def __init__(self, config, data_loader):
@@ -38,7 +42,6 @@ class Trainer:
         self.b2 = config.b2
         self.build_model()
 
-
     def train(self):
         total_step = len(self.data_loader)
         optimizer_generator = Adam(self.generator.parameters(), lr=self.lr, betas=(self.b1, self.b2))
@@ -50,8 +53,6 @@ class Trainer:
         self.discriminator.train()
 
         for epoch in range(self.epoch, self.num_epoch):
-            if not os.path.exists(os.path.join(self.checkpoint_dir, str(epoch))):
-                os.makedirs(os.path.join(self.checkpoint_dir, str(epoch)))
             if not os.path.exists(os.path.join(self.sample_dir, str(epoch))):
                 os.makedirs(os.path.join(self.sample_dir, str(epoch)))
 
@@ -103,10 +104,8 @@ class Trainer:
                         result = torch.cat((high_resolution, fake_high_resolution), 2)
                         save_image(result, os.path.join(self.sample_dir, str(epoch), f"SR_{step}.png"))
 
-            torch.save(self.generator.state_dict(), os.path.join(self.checkpoint_dir, str(epoch),
-                                                                 f"generator_{epoch}.pth"))
-            torch.save(self.generator.state_dict(), os.path.join(self.checkpoint_dir, str(epoch),
-                                                                 f"discriminator_{epoch}.pth"))
+            torch.save(self.generator.state_dict(), os.path.join(self.checkpoint_dir, f"generator_{epoch}.pth"))
+            torch.save(self.discriminator.state_dict(), os.path.join(self.checkpoint_dir, f"discriminator_{epoch}.pth"))
 
     def build_model(self):
         self.generator = ESRGAN(3, 3, 64, scale_factor=self.scale_factor).to(self.device)
@@ -122,10 +121,8 @@ class Trainer:
             print(f"[!] No checkpoint in {self.checkpoint_dir}")
             return
 
-        generator = glob(
-            os.path.join(self.checkpoint_dir, f'ESRGAN_{self.epoch - 1}.pth'))
-        discriminator = glob(
-            os.path.join(self.checkpoint_dir, f'ESRGAN_{self.epoch - 1}.pth'))
+        generator = glob(os.path.join(self.checkpoint_dir, f'generator_{self.epoch - 1}.pth'))
+        discriminator = glob(os.path.join(self.checkpoint_dir, f'discriminator_{self.epoch - 1}.pth'))
 
         if not generator:
             print(f"[!] No checkpoint in epoch {self.epoch - 1}")
