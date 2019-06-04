@@ -50,11 +50,10 @@ class Trainer:
                                                                 lr_lambda=LambdaLR(self.num_epoch, self.epoch,
                                                                                    self.decay_epoch).step)
 
-
     def train(self):
         total_step = len(self.data_loader)
         adversarial_criterion = nn.BCELoss().to(self.device)
-        content_criterion = nn.MSELoss().to(self.device)
+        content_criterion = nn.L1Loss().to(self.device)
         perception_criterion = PerceptionLoss().to(self.device)
         self.generator.train()
         self.discriminator.train()

@@ -15,7 +15,7 @@ class Tester:
         self.sample_dir = config.sample_dir
         self.num_epoch = config.num_epoch
         self.image_size = config.image_size
-        self.upsampler = nn.Upsample(scale_factor=self.scale_factor, mode='bilinear')
+        self.upsampler = nn.Upsample(scale_factor=self.scale_factor)
         self.epoch = config.epoch
         self.build_model()
 

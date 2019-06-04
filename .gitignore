@@ -87,5 +87,7 @@ fabric.properties
 
 dataset
 datasets
+samples
 sample
 checkpoint
+checkpoints
