@@ -4,7 +4,7 @@ from model.ESRGAN import ESRGAN
 from model.Discriminator import Discriminator
 import os
 from glob import glob
-from torch.autograd import Variable
+from util.util import LambdaLR
 import torch.nn as nn
 from torchvision.utils import save_image
 from loss.loss import PerceptionLoss
@@ -36,18 +36,25 @@ class Trainer:
         self.batch_size = config.batch_size
         self.sample_dir = config.sample_dir
         self.nf = config.nf
-        self.Tensor = torch.cuda.is_available()
         self.scale_factor = config.scale_factor
         self.b1 = config.b1
         self.b2 = config.b2
+        self.decay_epoch = config.decay_epoch
         self.build_model()
+        self.optimizer_generator = Adam(self.generator.parameters(), lr=self.lr, betas=(self.b1, self.b2))
+        self.optimizer_discriminator = Adam(self.discriminator.parameters(), lr=self.lr, betas=(self.b1, self.b2))
+        self.lr_scheduler_generator = torch.optim.lr_scheduler.LambdaLR(self.optimizer_generator,
+                                                                lr_lambda=LambdaLR(self.num_epoch, self.epoch,
+                                                                                   self.decay_epoch).step)
+        self.lr_scheduler_discriminator = torch.optim.lr_scheduler.LambdaLR(self.optimizer_discriminator,
+                                                                lr_lambda=LambdaLR(self.num_epoch, self.epoch,
+                                                                                   self.decay_epoch).step)
+
 
     def train(self):
         total_step = len(self.data_loader)
-        optimizer_generator = Adam(self.generator.parameters(), lr=self.lr, betas=(self.b1, self.b2))
-        optimizer_discriminator = Adam(self.discriminator.parameters(), lr=self.lr, betas=(self.b1, self.b2))
         adversarial_criterion = nn.BCELoss().to(self.device)
-        content_criterion = nn.L1Loss().to(self.device)
+        content_criterion = nn.MSELoss().to(self.device)
         perception_criterion = PerceptionLoss().to(self.device)
         self.generator.train()
         self.discriminator.train()
@@ -79,9 +86,9 @@ class Trainer:
 
                 generator_loss = adversarial_loss + perception_loss*0.005 + content_loss*0.01
 
-                optimizer_generator.zero_grad()
+                self.optimizer_generator.zero_grad()
                 generator_loss.backward(retain_graph=True)
-                optimizer_generator.step()
+                self.optimizer_generator.step()
 
                 #######################
                 # train discriminator #
@@ -93,9 +100,9 @@ class Trainer:
                 adversarial_loss_fr = adversarial_criterion(discriminator_fr, fake_labels)
                 discriminator_loss = (adversarial_loss_fr + adversarial_loss_rf)/2
 
-                optimizer_discriminator.zero_grad()
+                self.optimizer_discriminator.zero_grad()
                 discriminator_loss.backward(retain_graph=True)
-                optimizer_discriminator.step()
+                self.optimizer_discriminator.step()
 
                 if step % 50 == 0:
                     print(f"[Epoch {epoch}/{self.num_epoch}] [Batch {step}/{total_step}] "
@@ -106,6 +113,9 @@ class Trainer:
 
             torch.save(self.generator.state_dict(), os.path.join(self.checkpoint_dir, f"generator_{epoch}.pth"))
             torch.save(self.discriminator.state_dict(), os.path.join(self.checkpoint_dir, f"discriminator_{epoch}.pth"))
+
+            self.lr_scheduler_generator.step()
+            self.lr_scheduler_discriminator.step()
 
     def build_model(self):
         self.generator = ESRGAN(3, 3, 64, scale_factor=self.scale_factor).to(self.device)
