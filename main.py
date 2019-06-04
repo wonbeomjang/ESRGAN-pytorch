@@ -19,8 +19,8 @@ def main(config):
 
     data_loader, val_data_loader = get_loader(config.data_dir, config.image_size, config.scale_factor,
                                               config.batch_size, config.sample_batch_size)
-    # trainer = Trainer(config, data_loader)
-    # trainer.train()
+    trainer = Trainer(config, data_loader)
+    trainer.train()
 
     tester = Tester(config, val_data_loader)
     tester.test()
