@@ -7,9 +7,9 @@ This repository implements a deep-running model for super resolution.
  
  ## architecture
  [Overall Architecture]
- ![ESRGAN architecture](./image/architecture.png)  
+ ![ESRGAN architecture](./image/architecture.PNG)  
  [Basic block]  
- ![BasicBlock](./image/basicBlock.png)
+ ![BasicBlock](./image/basicBlock.PNG)
  
  ## Sample
 From the top is a low resolution image, a restored high resolution image, and ground truth.  
