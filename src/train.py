@@ -40,15 +40,19 @@ class Trainer:
         self.b1 = config.b1
         self.b2 = config.b2
         self.decay_epoch = config.decay_epoch
+        self.weight_decay = config.weight_decay
         self.build_model()
-        self.optimizer_generator = Adam(self.generator.parameters(), lr=self.lr, betas=(self.b1, self.b2))
-        self.optimizer_discriminator = Adam(self.discriminator.parameters(), lr=self.lr, betas=(self.b1, self.b2))
+        self.optimizer_generator = Adam(self.generator.parameters(), lr=self.lr, betas=(self.b1, self.b2),
+                                        )
+        self.optimizer_discriminator = Adam(self.discriminator.parameters(), lr=self.lr, betas=(self.b1, self.b2),
+                                            )
         self.lr_scheduler_generator = torch.optim.lr_scheduler.LambdaLR(self.optimizer_generator,
                                                                 lr_lambda=LambdaLR(self.num_epoch, self.epoch,
                                                                                    self.decay_epoch).step)
         self.lr_scheduler_discriminator = torch.optim.lr_scheduler.LambdaLR(self.optimizer_discriminator,
                                                                 lr_lambda=LambdaLR(self.num_epoch, self.epoch,
                                                                                    self.decay_epoch).step)
+
 
     def train(self):
         total_step = len(self.data_loader)

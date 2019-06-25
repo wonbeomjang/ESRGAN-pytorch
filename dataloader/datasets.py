@@ -20,18 +20,23 @@ class Datasets(Dataset):
         image = self.image_path[item]
         image = Image.open(image).convert('RGB')
 
+        transform = transforms.Compose([
+            transforms.RandomVerticalFlip(),
+            transforms.RandomCrop(min(image.size[0], image.size[1])),
+            transforms.RandomHorizontalFlip()
+        ])
+
         transform_low_resolution = transforms.Compose([
-            transforms.CenterCrop(min(image.size[0], image.size[1])),
             transforms.Resize(self.image_size // self.scale),
             transforms.ToTensor(),
         ])
 
         transform_high_resolution = transforms.Compose([
-            transforms.CenterCrop(min(image.size[0], image.size[1])),
             transforms.Resize(self.image_size),
             transforms.ToTensor(),
         ])
 
+        image = transform(image)
         low_resolution = transform_low_resolution(image)
         high_resolution = transform_high_resolution(image)
 
