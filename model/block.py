@@ -118,25 +118,25 @@ def upsample_block(in_channels, out_channels, kernel_size=3, stride=1, dilation=
                  scale_factor=2):
     n_pad = get_n_padding(kernel_size, dilation)
 
-    block = []
-
-    for i in range(int(log2(scale_factor))):
-        block += [
-            nn.UpsamplingBilinear2d(scale_factor=2),
-            padding(pad_type, n_pad),
-            nn.Conv2d(in_channels, out_channels, kernel_size, stride, 0, dilation, groups, bias),
-            activation(act_type, inplace, negative_slope, n_prelu)
-        ]
-
-    return nn.Sequential(*block)
-    # conv = conv_block(in_channels, out_channels * (scale_factor ** 2), kernel_size, stride, dilation, groups, bias,
-    #                   act_type, pad_type, norm_type, negative_slope, n_prelu, inplace)
+    # block = []
     #
-    # pixel_shuffle = nn.PixelShuffle(scale_factor)
-    # n = normalization(norm_type, out_channels) if norm_type else None
-    # a = activation(act_type) if act_type else None
-    # if norm_type is not None:
-    #     return nn.Sequential(conv, pixel_shuffle, n, a)
-    # else:
-    #     return nn.Sequential(conv, pixel_shuffle, a)
+    # for i in range(int(log2(scale_factor))):
+    #     block += [
+    #         nn.UpsamplingBilinear2d(scale_factor=2),
+    #         padding(pad_type, n_pad),
+    #         nn.Conv2d(in_channels, out_channels, kernel_size, stride, 0, dilation, groups, bias),
+    #         activation(act_type, inplace, negative_slope, n_prelu)
+    #     ]
+    #
+    # return nn.Sequential(*block)
+    conv = conv_block(in_channels, out_channels * (scale_factor ** 2), kernel_size, stride, dilation, groups, bias,
+                      act_type, pad_type, norm_type, negative_slope, n_prelu, inplace)
+
+    pixel_shuffle = nn.PixelShuffle(scale_factor)
+    n = normalization(norm_type, out_channels) if norm_type else None
+    a = activation(act_type) if act_type else None
+    if norm_type is not None:
+        return nn.Sequential(conv, pixel_shuffle, n, a)
+    else:
+        return nn.Sequential(conv, pixel_shuffle, a)
 
