@@ -17,6 +17,7 @@ parser.add_argument('--b1', type=float, default=0.9, help='')
 parser.add_argument('--b2', type=float, default=0.999, help='')
 parser.add_argument('--decay_epoch', type=int, default=60, help='')
 parser.add_argument('--weight_decay', type=float, default=1e-2, help='')
+parser.add_argument('--decay_batch_size', type=int, default=2e5, help='')
 
 
 def get_config():
