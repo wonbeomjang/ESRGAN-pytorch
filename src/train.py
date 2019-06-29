@@ -4,7 +4,7 @@ from model.ESRGAN import ESRGAN
 from model.Discriminator import Discriminator
 import os
 from glob import glob
-from util.util import LRScheduler
+from util.util import LRScheduler, LambdaLR
 import torch.nn as nn
 from torchvision.utils import save_image
 from loss.loss import PerceptionLoss
@@ -58,17 +58,16 @@ class Trainer:
         self.optimizer_discriminator = Adam(self.discriminator.parameters(), lr=self.lr, betas=(self.b1, self.b2),
                                             weight_decay=self.weight_decay)
 
+
         self.lr_scheduler_generator = torch.optim.lr_scheduler.LambdaLR(self.optimizer_generator,
-                                                                        lr_lambda=LRScheduler(self.num_epoch,
-                                                                                              self.epoch,
-                                                                                              len(self.data_loader),
-                                                                                              self.decay_batch_size
-                                                                                              ).step)
+                                                                        LambdaLR(self.num_epoch, self.epoch
+                                                                                 , len(self.data_loader),
+                                                                                 self.decay_batch_size))
         self.lr_scheduler_discriminator = torch.optim.lr_scheduler.LambdaLR(self.optimizer_discriminator,
-                                                                            lr_lambda=LRScheduler(self.num_epoch,
-                                                                                                  self.epoch,
-                                                                                                  len(self.data_loader),
-                                                                                                  self.decay_batch_size).step)
+                                                                            LambdaLR(self.num_epoch, self.epoch
+                                                                                     , len(self.data_loader),
+                                                                                     self.decay_batch_size)
+                                                                            )
 
     def train(self):
         total_step = len(self.data_loader)
