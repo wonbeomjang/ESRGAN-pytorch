@@ -18,6 +18,9 @@ parser.add_argument('--b2', type=float, default=0.999, help='')
 parser.add_argument('--decay_epoch', type=int, default=60, help='')
 parser.add_argument('--weight_decay', type=float, default=1e-2, help='')
 parser.add_argument('--decay_batch_size', type=int, default=2e5, help='')
+parser.add_argument('--content_loss_factor', type=float, default=1e-2, help='')
+parser.add_argument('--perceptual_loss_factor', type=float, default=1, help='')
+parser.add_argument('--adversarial_loss_factor', type=float, default=5e-3, help='')
 
 
 def get_config():

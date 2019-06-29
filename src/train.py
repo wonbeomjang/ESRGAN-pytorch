@@ -42,6 +42,9 @@ class Trainer:
         self.decay_epoch = config.decay_epoch
         self.weight_decay = config.weight_decay
         self.decay_batch_size = config.decay_batch_size
+        self.content_loss_factor = config.content_loss_factor
+        self.perceptual_loss_factor = config.perceptual_loss_factor
+        self.adversarial_loss_factor = config.adversarial_loss_factor
         self.build_model()
         self.optimizer_generator = Adam(self.generator.parameters(), lr=self.lr, betas=(self.b1, self.b2),
                                         weight_decay=self.weight_decay)
@@ -99,7 +102,9 @@ class Trainer:
                 perception_loss = perception_criterion(high_resolution, fake_high_resolution)
                 content_loss = content_criterion(high_resolution, fake_high_resolution)
 
-                generator_loss = adversarial_loss + perception_loss * 0.005 + content_loss * 0.01
+                generator_loss = adversarial_loss * self.adversarial_loss_factor \
+                                 + perception_loss * self.perceptual_loss_factor \
+                                 + content_loss * self.content_loss_factor
 
                 self.optimizer_generator.zero_grad()
                 generator_loss.backward(retain_graph=True)
