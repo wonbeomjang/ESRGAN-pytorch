@@ -97,11 +97,11 @@ class Trainer:
                 adversarial_loss_fr = adversarial_criterion(discriminator_fr, real_labels)
                 adversarial_loss = (adversarial_loss_fr + adversarial_loss_rf) / 2
 
-                perception_loss = perception_criterion(high_resolution, fake_high_resolution)
+                perceptual_loss = perception_criterion(high_resolution, fake_high_resolution)
                 content_loss = content_criterion(high_resolution, fake_high_resolution)
 
                 generator_loss = adversarial_loss * self.adversarial_loss_factor + \
-                                 perception_loss * self.perceptual_loss_factor + \
+                                 perceptual_loss * self.perceptual_loss_factor + \
                                  content_loss * self.content_loss_factor
 
                 self.optimizer_generator.zero_grad()
@@ -124,7 +124,11 @@ class Trainer:
 
                 if step % 50 == 0:
                     print(f"[Epoch {epoch}/{self.num_epoch}] [Batch {step}/{total_step}] "
-                          f"[D loss {discriminator_loss.item()}] [G loss {generator_loss.item()}]")
+                          f"[D loss {discriminator_loss.item():.4f}] [G loss {generator_loss.item():.4f}] "
+                          f"[adversarial loss {adversarial_loss.item() * self.adversarial_loss_factor:.4f}]"
+                          f"[perceptual loss {perceptual_loss.item() * self.perceptual_loss_factor:.4f}]"
+                          f"[content loss {content_loss.item() * self.content_loss_factor:.4f}]"
+                          f"")
                     if step % 100 == 0:
                         result = torch.cat((high_resolution, fake_high_resolution), 2)
                         save_image(result, os.path.join(self.sample_dir, str(epoch), f"SR_{step}.png"))

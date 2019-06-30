@@ -21,7 +21,7 @@ def main(config):
     if not os.listdir(config.data_dir):
         zip_path = os.path.join(config.data_dir, 'dataset.zip')
         download_url(config.dataset_url, zip_path)
-        unzip_file(zip_path)
+        unzip_file(zip_path, config.data_dir)
         reformat_file(config.data_dir)
 
     print(f"ESRGAN start")

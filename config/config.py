@@ -25,9 +25,9 @@ parser.add_argument('--weight_decay', type=float, default=1e-2, help='weight dec
 
 parser.add_argument('--p_decay_batch_size', type=int, default=2e5, help='batch size where learning rate halve each when'
                                                                         'training perceptual oriented')
-parser.add_argument('--p_content_loss_factor', type=float, default=0, help='content loss factor when training '
+parser.add_argument('--p_content_loss_factor', type=float, default=1, help='content loss factor when training '
                                                                            'perceptual oriented')
-parser.add_argument('--P_perceptual_loss_factor', type=float, default=1, help='perceptual loss factor when training '
+parser.add_argument('--p_perceptual_loss_factor', type=float, default=0, help='perceptual loss factor when training '
                                                                               'perceptual oriented')
 parser.add_argument('--p_adversarial_loss_factor', type=float, default=0, help='adversarial loss factor when '
                                                                                'training perceptual oriented')
