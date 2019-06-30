@@ -11,6 +11,9 @@ parser.add_argument('--lr', type=float, default=2e-4, help='learning rate')
 parser.add_argument('--data_dir', default='datasets', help='path to dataset')
 parser.add_argument('--checkpoint_dir', default='checkpoints', help="path to saved models (to continue training)")
 parser.add_argument('--sample_dir', default='samples', help='folder to output images and model checkpoints')
+parser.add_argument('--dataset_url', default='http://data.vision.ee.ethz.ch/cvl/DIV2K/DIV2K_train_LR_x8.zip',
+                    help='the url of DIV2K dataset for super resolution')
+
 parser.add_argument('--workers', type=int, default=5, help='number of data loading workers')
 parser.add_argument('--scale_factor', type=int, default=4, help='scale factor for super resolution')
 parser.add_argument('--nf', type=int, default=32, help='number of filter in esrgan')
