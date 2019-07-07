@@ -2,6 +2,7 @@ import os
 import shutil
 import urllib
 import zipfile
+import tarfile
 
 from tqdm import tqdm
 
@@ -18,10 +19,17 @@ class LambdaLR:
         return factor
 
 
-def unzip_file(zip_path, data_path):
+def unzip_zip_file(zip_path, data_path):
     zip_ref = zipfile.ZipFile(zip_path, 'r')
     zip_ref.extractall(data_path)
     zip_ref.close()
+    os.remove(zip_path)
+
+
+def unzip_tar_file(zip_path, data_path):
+    tar_ref = tarfile.open(zip_path, "r:")
+    tar_ref.extractall(data_path)
+    tar_ref.close()
     os.remove(zip_path)
 
 

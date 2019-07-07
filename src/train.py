@@ -10,20 +10,6 @@ from torchvision.utils import save_image
 from loss.loss import PerceptionLoss
 
 
-def weights_init(m):
-    classname = m.__class__.__name__
-    if classname.find('Conv') != -1:
-        m.weight.data.normal_(0.0, 0.02)
-
-    elif classname.find('BatchNorm') != -1:
-        m.weight.data.normal_(1.0, 0.02)
-        m.bias.data.fill_(0)
-
-    elif classname.find('InstanceNorm') != -1:
-        m.weight.data.normal_(1.0, 0.02)
-        m.bias.data.fill_(0)
-
-
 class Trainer:
     def __init__(self, config, data_loader):
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -98,7 +84,7 @@ class Trainer:
                 adversarial_loss = (adversarial_loss_fr + adversarial_loss_rf) / 2
 
                 perceptual_loss = perception_criterion(high_resolution, fake_high_resolution)
-                content_loss = content_criterion(high_resolution, fake_high_resolution)
+                content_loss = content_criterion(fake_high_resolution, high_resolution)
 
                 generator_loss = adversarial_loss * self.adversarial_loss_factor + \
                                  perceptual_loss * self.perceptual_loss_factor + \
@@ -147,7 +133,7 @@ class Trainer:
     def load_model(self):
         print(f"[*] Load model from {self.checkpoint_dir}")
         if not os.path.exists(self.checkpoint_dir):
-            os.makedirs(self.checkpoint_dir)
+            self.makedirs = os.makedirs(self.checkpoint_dir)
 
         if not os.listdir(self.checkpoint_dir):
             print(f"[!] No checkpoint in {self.checkpoint_dir}")
@@ -158,8 +144,6 @@ class Trainer:
 
         if not generator:
             print(f"[!] No checkpoint in epoch {self.epoch - 1}")
-            self.generator.apply(weights_init)
-            self.discriminator.apply(weights_init)
             return
 
         self.generator.load_state_dict(torch.load(generator[0]))

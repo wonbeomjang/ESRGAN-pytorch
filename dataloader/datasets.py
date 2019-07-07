@@ -4,7 +4,6 @@ import os
 from glob import glob
 from torchvision import transforms
 
-
 class Datasets(Dataset):
     def __init__(self, data_dir, image_size, scale):
         self.data_dir = data_dir
@@ -21,9 +20,9 @@ class Datasets(Dataset):
         image = Image.open(image).convert('RGB')
 
         transform = transforms.Compose([
+            transforms.RandomResizedCrop(self.image_size),
+            transforms.RandomHorizontalFlip(),
             transforms.RandomVerticalFlip(),
-            transforms.RandomCrop(min(image.size[0], image.size[1])),
-            transforms.RandomHorizontalFlip()
         ])
 
         transform_low_resolution = transforms.Compose([
@@ -32,7 +31,7 @@ class Datasets(Dataset):
         ])
 
         transform_high_resolution = transforms.Compose([
-            transforms.Resize(self.image_size),
+            # transforms.Resize(self.image_size),
             transforms.ToTensor(),
         ])
 

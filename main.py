@@ -3,7 +3,7 @@ from src.test import Tester
 from dataloader.dataloader import get_loader
 import os
 from config.config import get_config
-from util.util import download_url, reformat_file, unzip_file
+from util.util import download_url, reformat_file, unzip_tar_file, unzip_zip_file
 
 
 def main(config):
@@ -19,9 +19,14 @@ def main(config):
 
     # download dataset
     if not os.listdir(config.data_dir):
-        zip_path = os.path.join(config.data_dir, 'dataset.zip')
-        download_url(config.dataset_url, zip_path)
-        unzip_file(zip_path, config.data_dir)
+        url = config.dataset_url
+        for i, url in enumerate(url):
+            zip_path = os.path.join(config.data_dir, url.split('/')[-1])
+            download_url(url, zip_path)
+            if zip_path.endswith('tar'):
+                unzip_tar_file(zip_path, config.data_dir)
+            if zip_path.endswith('zip'):
+                unzip_zip_file(zip_path, config.data_dir)
         reformat_file(config.data_dir)
 
     print(f"ESRGAN start")
