@@ -11,7 +11,10 @@ class PerceptionLoss(nn.Module):
             param.requires_grad = False
         self.loss_network = loss_network
         self.l1_loss = nn.L1Loss()
+        self.upsampler = nn.Upsample(size=224)
 
     def forward(self, high_resolution, fake_high_resolution):
+        high_resolution = self.upsampler(high_resolution)
+        fake_high_resolution = self.upsampler(fake_high_resolution)
         perception_loss = self.l1_loss(self.loss_network(high_resolution), self.loss_network(fake_high_resolution))
         return perception_loss
