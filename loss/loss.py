@@ -5,6 +5,7 @@ from torchvision.models.vgg import vgg16
 class PerceptionLoss(nn.Module):
     def __init__(self):
         super(PerceptionLoss, self).__init__()
+
         vgg = vgg16(pretrained=True)
         loss_network = nn.Sequential(*list(vgg.features)[:29]).eval()
         for param in loss_network.parameters():
