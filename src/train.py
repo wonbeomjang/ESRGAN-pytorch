@@ -69,8 +69,8 @@ class Trainer:
                 low_resolution = image['lr'].to(self.device)
                 high_resolution = image['hr'].to(self.device)
 
-                real_labels = torch.ones((high_resolution.size(0), *self.discriminator.output_shape)).to(self.device)
-                fake_labels = torch.zeros((high_resolution.size(0), *self.discriminator.output_shape)).to(self.device)
+                real_labels = torch.ones((high_resolution.size(0), 1)).to(self.device)
+                fake_labels = torch.zeros((high_resolution.size(0), 1)).to(self.device)
 
                 ##########################
                 #   training generator   #

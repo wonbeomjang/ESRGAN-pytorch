@@ -3,7 +3,7 @@ from model.block import conv_block
 
 
 class SubDiscriminator(nn.Module):
-    def __init__(self, act_type='leakyrelu', num_conv_block=3):
+    def __init__(self, act_type='leakyrelu', num_conv_block=4):
         super(SubDiscriminator, self).__init__()
 
         block = []
@@ -21,16 +21,20 @@ class SubDiscriminator(nn.Module):
         out_channels //= 2
         in_channels = out_channels
 
+        block += [nn.Conv2d(in_channels, out_channels, 3),
+                  nn.LeakyReLU(0.2),
+                  nn.Conv2d(out_channels, out_channels, 3)]
+
         self.feature_extraction = nn.Sequential(*block)
 
         self.classification = nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, 1),
-            nn.LeakyReLU(0.2),
-            nn.Conv2d(out_channels, 1, 1),
+            nn.Linear(512 * 9 * 9, 100),
+            nn.Linear(100, 1)
         )
 
     def forward(self, x):
         x = self.feature_extraction(x)
+        x = x.view(x.size(0), -1)
         x = self.classification(x)
         return x
 
@@ -41,8 +45,6 @@ class Discriminator(nn.Module):
         self.discriminator_a = SubDiscriminator()
         self.discriminator_b = SubDiscriminator()
         self.sigmoid = nn.Sigmoid()
-
-        self.output_shape = (1, image_size // 2 ** 3 - 1, image_size // 2 ** 3 - 1)
 
     def forward(self, a, b):
         a = self.discriminator_a(a)
