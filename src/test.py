@@ -50,13 +50,3 @@ class Tester:
         generator = glob(os.path.join(self.checkpoint_dir, f'generator_{self.epoch - 1}.pth'))
 
         self.generator.load_state_dict(torch.load(generator[0]))
-
-"""
-alpha = 0.3  # interpolation coefficient
-net_A = torch.load('path_to_net_A.pth')
-net_B = torch.load('path_to_net_B.pth')
-net_interp = OrderedDict()
-for k, v_A in net_A.items():
-  v_B = net_B[k]
-  net_interp[k] = alpha * v_A + (1 - alpha) * v_B
-"""

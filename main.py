@@ -17,26 +17,14 @@ def main(config):
     if not os.path.exists(config.data_dir):
         os.makedirs(config.data_dir)
 
-    # download dataset
-    if not os.listdir(config.data_dir):
-        url = config.dataset_url
-        for i, url in enumerate(url):
-            zip_path = os.path.join(config.data_dir, url.split('/')[-1])
-            download_url(url, zip_path)
-            if zip_path.endswith('tar'):
-                unzip_tar_file(zip_path, config.data_dir)
-            if zip_path.endswith('zip'):
-                unzip_zip_file(zip_path, config.data_dir)
-        reformat_file(config.data_dir)
-
     print(f"ESRGAN start")
 
-    data_loader, val_data_loader = get_loader(config.data_dir, config.image_size, config.scale_factor,
-                                              config.batch_size, config.sample_batch_size)
+    data_loader, test_data_loader = get_loader(config.data_dir, config.image_size, config.scale_factor,
+                                               config.batch_size, config.sample_batch_size)
     trainer = Trainer(config, data_loader)
     trainer.train()
 
-    tester = Tester(config, val_data_loader)
+    tester = Tester(config, test_data_loader)
     tester.test()
 
 
