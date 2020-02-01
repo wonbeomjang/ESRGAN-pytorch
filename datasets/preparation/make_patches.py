@@ -5,8 +5,6 @@ from multiprocessing import Pool
 
 def crop_image(path, image_size, stride):
     image_list = os.listdir(path)
-    if not os.path.exists(os.path.join(path, 'train')):
-        os.makedirs(os.path.join(path, 'train'))
 
     for index, image_name in enumerate(image_list):
         if not image_name.endswith('.png'):
@@ -26,14 +24,14 @@ def crop_image(path, image_size, stride):
             for j in range(num_col):
                 if (j+1)*image_size > width:
                     break
-                cv2.imwrite(os.path.join(path, 'train', f'{image_name.split(".")[0]}_{image_index}.png'), img[i*image_size:(i+1)*image_size, j*image_size:(j+1)*image_size])
+                cv2.imwrite(os.path.join(path, f'{image_name.split(".")[0]}_{image_index}.png'), img[i*image_size:(i+1)*image_size, j*image_size:(j+1)*image_size])
                 image_index += 1
         os.remove(os.path.join(path, image_name))
 
 
 def make_patches():
-    image_dir = [('gan', 128, 100), ('hr', 128, 100), ('psnr', 128, 100), ('lr', 37, 25)]
-    pool = Pool(processes=4)
+    image_dir = [('hr', 128, 100), ('lr', 37, 25)]
+    pool = Pool(processes=2)
     pool.starmap(crop_image, image_dir)
     pool.close()
     pool.join()
