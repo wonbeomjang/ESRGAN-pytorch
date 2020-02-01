@@ -12,13 +12,10 @@ def main(config):
         os.makedirs(config.checkpoint_dir)
     if not os.path.exists(config.sample_dir):
         os.makedirs(config.sample_dir)
-    if not os.path.exists(config.data_dir):
-        os.makedirs(config.data_dir)
 
     print(f"ESRGAN start")
 
-    data_loader = get_loader(config.data_dir, config.image_size, config.scale_factor,
-                                               config.batch_size, config.sample_batch_size)
+    data_loader = get_loader(config.image_size, config.scale_factor, config.batch_size, config.sample_batch_size)
     trainer = Trainer(config, data_loader)
     trainer.train()
 

@@ -1,26 +1,24 @@
 from torch.utils.data import Dataset
 from PIL import Image
 import os
-from torchvision import transforms
 import torchvision.transforms.functional as TF
 from random import random
 
 
 class Datasets(Dataset):
-    def __init__(self, data_dir, image_size, scale):
-        self.data_dir = data_dir
+    def __init__(self, image_size, scale):
         self.image_size = image_size
         self.scale = scale
 
-        if not os.path.exists(data_dir):
-            raise Exception(f"[!] {self.data_dir} not exitd")
+        if not os.path.exists('datasets'):
+            raise Exception(f"[!] dataset is not exited")
 
-        self.image_file_name = sorted(os.path.join(self.data_dir, 'hr'))
+        self.image_file_name = sorted(os.path.join('datasets', 'hr'))
 
     def __getitem__(self, item):
         file_name = self.image_file_name[item]
-        high_resolution = Image.open(os.path.join(self.data_dir, 'hr', file_name)).convert('RGB')
-        low_resolution = Image.open(os.path.join(self.data_dir, 'lr', file_name)).convert('RGB')
+        high_resolution = Image.open(os.path.join('datasets', 'hr', file_name)).convert('RGB')
+        low_resolution = Image.open(os.path.join('datasets', 'lr', file_name)).convert('RGB')
 
         if random() > 0.5:
             high_resolution = TF.vflip(high_resolution)

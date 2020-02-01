@@ -23,9 +23,6 @@ class Trainer:
         self.sample_dir = config.sample_dir
         self.nf = config.nf
         self.scale_factor = config.scale_factor
-        self.b1 = config.b1
-        self.b2 = config.b2
-        self.weight_decay = config.weight_decay
 
         if config.is_perceptual_oriented:
             self.content_loss_factor = config.p_content_loss_factor
@@ -39,19 +36,13 @@ class Trainer:
             self.decay_batch_size = config.g_decay_batch_size
 
         self.build_model()
-        self.optimizer_generator = Adam(self.generator.parameters(), lr=self.lr, betas=(self.b1, self.b2),
-                                        weight_decay=self.weight_decay)
-        self.optimizer_discriminator = Adam(self.discriminator.parameters(), lr=self.lr, betas=(self.b1, self.b2),
-                                            weight_decay=self.weight_decay)
+        self.optimizer_generator = Adam(self.generator.parameters(), lr=config.lr, betas=(config.b1, config.b2),
+                                        weight_decay=config.weight_decay)
+        self.optimizer_discriminator = Adam(self.discriminator.parameters(), lr=config.lr, betas=(config.b1, config.b2),
+                                            weight_decay=config.weight_decay)
 
-        self.lr_scheduler_generator = torch.optim.lr_scheduler.LambdaLR(self.optimizer_generator,
-                                                                        LambdaLR(self.num_epoch, self.epoch
-                                                                                 , len(self.data_loader),
-                                                                                 self.decay_batch_size).step)
-        self.lr_scheduler_discriminator = torch.optim.lr_scheduler.LambdaLR(self.optimizer_discriminator,
-                                                                            LambdaLR(self.num_epoch, self.epoch
-                                                                                     , len(self.data_loader),
-                                                                                     self.decay_batch_size).step)
+        self.lr_scheduler_generator = torch.optim.lr_scheduler.StepLR(self.optimizer_generator, self.decay_batch_size)
+        self.lr_scheduler_discriminator = torch.optim.lr_scheduler.StepLR(self.optimizer_discriminator, self.decay_batch_size)
 
     def train(self):
         total_step = len(self.data_loader)
