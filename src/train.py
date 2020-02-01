@@ -127,7 +127,7 @@ class Trainer:
 
     def build_model(self):
         self.generator = ESRGAN(3, 3, 64, scale_factor=self.scale_factor).to(self.device)
-        self.discriminator = Discriminator(self.image_size).to(self.device)
+        self.discriminator = Discriminator().to(self.device)
         self.load_model()
 
     def load_model(self):
