@@ -85,8 +85,8 @@ fabric.properties
 
 # End of https://www.gitignore.io/api/pycharm
 
-dataset
-datasets
+datasets/hr
+datasets/lr
 samples
 sample
 checkpoint

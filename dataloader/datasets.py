@@ -1,11 +1,12 @@
 from torch.utils.data import Dataset
 from PIL import Image
 import os
-from glob import glob
 from torchvision import transforms
+import torchvision.transforms.functional as TF
+from random import random
 
 
-class TrainDatasets(Dataset):
+class Datasets(Dataset):
     def __init__(self, data_dir, image_size, scale):
         self.data_dir = data_dir
         self.image_size = image_size
@@ -14,76 +15,27 @@ class TrainDatasets(Dataset):
         if not os.path.exists(data_dir):
             raise Exception(f"[!] {self.data_dir} not exitd")
 
-        self.image_path = sorted(glob(os.path.join(self.data_dir, "*.*")))
+        self.image_file_name = sorted(os.path.join(self.data_dir, 'hr'))
 
     def __getitem__(self, item):
-        image = self.image_path[item]
-        image = Image.open(image).convert('RGB')
+        file_name = self.image_file_name[item]
+        high_resolution = Image.open(os.path.join(self.data_dir, 'hr', file_name)).convert('RGB')
+        low_resolution = Image.open(os.path.join(self.data_dir, 'lr', file_name)).convert('RGB')
 
-        transform = transforms.Compose([
-            transforms.RandomCrop(self.image_size),
-            transforms.RandomHorizontalFlip(),
-            transforms.RandomVerticalFlip(),
-        ])
+        if random() > 0.5:
+            high_resolution = TF.vflip(high_resolution)
+            low_resolution = TF.vflip(low_resolution)
 
-        transform_low_resolution = transforms.Compose([
-            transforms.Resize(self.image_size // self.scale),
-            transforms.ToTensor(),
-        ])
+        if random() > 0.5:
+            high_resolution = TF.hflip(high_resolution)
+            low_resolution = TF.hflip(low_resolution)
 
-        transform_high_resolution = transforms.Compose([
-            transforms.ToTensor(),
-        ])
+        high_resolution = TF.to_tensor(high_resolution)
+        low_resolution = TF.to_tensor(low_resolution)
 
-        image = transform(image)
-        low_resolution = transform_low_resolution(image)
-        high_resolution = transform_high_resolution(image)
+        images = {'lr': low_resolution, 'hr': high_resolution}
 
-        _image = {'lr': low_resolution, 'hr': high_resolution}
-
-        return _image
+        return images
 
     def __len__(self):
-        return len(self.image_path)
-
-
-class TestDataset(Dataset):
-    def __init__(self, data_dir, image_size, scale):
-        self.data_dir = data_dir
-        self.image_size = image_size
-        self.scale = scale
-
-        if not os.path.exists(data_dir):
-            raise Exception(f"[!] {self.data_dir} not exitd")
-
-        self.image_path = sorted(glob(os.path.join(self.data_dir, "*.*")))
-
-    def __getitem__(self, item):
-        image = self.image_path[item]
-        image = Image.open(image).convert('RGB')
-
-        transform = transforms.Compose([
-            transforms.RandomCrop(self.image_size),
-            transforms.RandomHorizontalFlip(),
-            transforms.RandomVerticalFlip(),
-        ])
-
-        transform_low_resolution = transforms.Compose([
-            transforms.Resize(self.image_size // self.scale),
-            transforms.ToTensor(),
-        ])
-
-        transform_high_resolution = transforms.Compose([
-            transforms.ToTensor(),
-        ])
-
-        image = transform(image)
-        low_resolution = transform_low_resolution(image)
-        high_resolution = transform_high_resolution(image)
-
-        _image = {'lr': low_resolution, 'hr': high_resolution}
-
-        return _image
-
-    def __len__(self):
-        return len(self.image_path)
+        return len(self.image_file_name)

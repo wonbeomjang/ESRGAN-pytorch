@@ -1,9 +1,7 @@
 from src.train import Trainer
-from src.test import Tester
 from dataloader.dataloader import get_loader
 import os
 from config.config import get_config
-from util.util import download_url, reformat_file, unzip_tar_file, unzip_zip_file
 
 
 def main(config):
@@ -19,13 +17,10 @@ def main(config):
 
     print(f"ESRGAN start")
 
-    data_loader, test_data_loader = get_loader(config.data_dir, config.image_size, config.scale_factor,
+    data_loader = get_loader(config.data_dir, config.image_size, config.scale_factor,
                                                config.batch_size, config.sample_batch_size)
     trainer = Trainer(config, data_loader)
     trainer.train()
-
-    tester = Tester(config, test_data_loader)
-    tester.test()
 
 
 if __name__ == "__main__":
