@@ -21,4 +21,27 @@ The sample is still being imported during the training, and the completeness is 
  ![Sample](./image/sample3.png)
  
  ## how to train
-Create a datasets directory and put the images in it
+ ### Use Flicker2K and DIV2K
+```bash
+cd datasets
+python prepare_datasets.py
+```
+ ###custom dataset
+Make dataset like this
+```
+datasets/
+    hr/
+        0001.png
+        sdf.png
+        0002.png
+        0003.png
+        0004.png
+        ...
+    lr/
+        0001.png
+        sdf.png
+        0002.png
+        0003.png
+        0004.png
+        ...
+```

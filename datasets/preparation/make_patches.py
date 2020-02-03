@@ -30,7 +30,7 @@ def crop_image(path, image_size, stride):
 
 
 def make_patches():
-    image_dir = [('hr', 128, 100), ('lr', 37, 25)]
+    image_dir = [('hr', 128, 100), ('lr', 32, 25)]
     pool = Pool(processes=2)
     pool.starmap(crop_image, image_dir)
     pool.close()

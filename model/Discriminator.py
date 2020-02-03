@@ -1,4 +1,5 @@
 import torch.nn as nn
+import torch
 
 
 class SubDiscriminator(nn.Module):
@@ -18,7 +19,6 @@ class SubDiscriminator(nn.Module):
             in_channels = out_channels
 
             block += [nn.ReflectionPad2d(1),
-                      nn.ReflectionPad2d(1),
                       nn.Conv2d(in_channels, out_channels, 3, 2),
                       nn.LeakyReLU()]
             out_channels *= 2
@@ -32,8 +32,10 @@ class SubDiscriminator(nn.Module):
 
         self.feature_extraction = nn.Sequential(*block)
 
+        self.avgpool = nn.AdaptiveAvgPool2d((512, 512))
+
         self.classification = nn.Sequential(
-            nn.Linear(18432, 100),
+            nn.Linear(8192, 100),
             nn.Linear(100, 1)
         )
 
@@ -54,4 +56,4 @@ class Discriminator(nn.Module):
     def forward(self, a, b):
         a = self.discriminator_a(a)
         b = self.discriminator_b(b)
-        return self.sigmoid(a - b)
+        return self.sigmoid(a - b.mean(0, keepdim=True))

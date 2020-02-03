@@ -60,12 +60,13 @@ class Trainer:
                 low_resolution = image['lr'].to(self.device)
                 high_resolution = image['hr'].to(self.device)
 
-                real_labels = torch.ones((high_resolution.size(0), 1)).to(self.device)
-                fake_labels = torch.zeros((high_resolution.size(0), 1)).to(self.device)
+                real_labels = torch.ones((high_resolution.size(0), 1), requires_grad=False).to(self.device)
+                fake_labels = torch.zeros((high_resolution.size(0), 1), requires_grad=False).to(self.device)
 
                 ##########################
                 #   training generator   #
                 ##########################
+                self.optimizer_generator.zero_grad()
                 fake_high_resolution = self.generator(low_resolution)
                 discriminator_rf = self.discriminator(high_resolution, fake_high_resolution)
                 discriminator_fr = self.discriminator(fake_high_resolution, high_resolution)
@@ -81,13 +82,13 @@ class Trainer:
                                  perceptual_loss * self.perceptual_loss_factor + \
                                  content_loss * self.content_loss_factor
 
-                self.optimizer_generator.zero_grad()
                 generator_loss.backward(retain_graph=True)
                 self.optimizer_generator.step()
 
                 ##########################
                 # training discriminator #
                 ##########################
+                self.optimizer_discriminator.zero_grad()
                 discriminator_rf = self.discriminator(high_resolution, fake_high_resolution)
                 discriminator_fr = self.discriminator(fake_high_resolution, high_resolution)
 
@@ -95,7 +96,6 @@ class Trainer:
                 adversarial_loss_fr = adversarial_criterion(discriminator_fr, fake_labels)
                 discriminator_loss = (adversarial_loss_fr + adversarial_loss_rf) / 2
 
-                self.optimizer_discriminator.zero_grad()
                 discriminator_loss.backward(retain_graph=True)
                 self.optimizer_discriminator.step()
 

@@ -13,7 +13,7 @@ class Datasets(Dataset):
         if not os.path.exists('datasets'):
             raise Exception(f"[!] dataset is not exited")
 
-        self.image_file_name = sorted(os.path.join('datasets', 'hr'))
+        self.image_file_name = sorted(os.listdir(os.path.join('datasets', 'hr')))
 
     def __getitem__(self, item):
         file_name = self.image_file_name[item]
