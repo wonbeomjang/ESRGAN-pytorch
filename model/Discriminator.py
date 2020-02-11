@@ -2,9 +2,9 @@ import torch.nn as nn
 import torch
 
 
-class SubDiscriminator(nn.Module):
+class Discriminator(nn.Module):
     def __init__(self, num_conv_block=4):
-        super(SubDiscriminator, self).__init__()
+        super(Discriminator, self).__init__()
 
         block = []
 
@@ -44,16 +44,3 @@ class SubDiscriminator(nn.Module):
         x = x.view(x.size(0), -1)
         x = self.classification(x)
         return x
-
-
-class Discriminator(nn.Module):
-    def __init__(self):
-        super(Discriminator, self).__init__()
-        self.discriminator_a = SubDiscriminator()
-        self.discriminator_b = SubDiscriminator()
-        self.sigmoid = nn.Sigmoid()
-
-    def forward(self, a, b):
-        a = self.discriminator_a(a)
-        b = self.discriminator_b(b)
-        return self.sigmoid(a - b.mean(0, keepdim=True))

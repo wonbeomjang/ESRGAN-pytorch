@@ -2,9 +2,9 @@ import torch.nn as nn
 from torchvision.models.vgg import vgg16
 
 
-class PerceptionLoss(nn.Module):
+class PerceptualLoss(nn.Module):
     def __init__(self):
-        super(PerceptionLoss, self).__init__()
+        super(PerceptualLoss, self).__init__()
 
         vgg = vgg16(pretrained=True)
         loss_network = nn.Sequential(*list(vgg.features)[:29]).eval()

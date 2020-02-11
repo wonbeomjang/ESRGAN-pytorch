@@ -4,10 +4,9 @@ from model.ESRGAN import ESRGAN
 from model.Discriminator import Discriminator
 import os
 from glob import glob
-from util.util import LambdaLR
 import torch.nn as nn
 from torchvision.utils import save_image
-from loss.loss import PerceptionLoss
+from loss.loss import PerceptualLoss
 
 
 class Trainer:
@@ -18,27 +17,28 @@ class Trainer:
         self.image_size = config.image_size
         self.data_loader = data_loader
         self.checkpoint_dir = config.checkpoint_dir
-        self.lr = config.lr
         self.batch_size = config.batch_size
         self.sample_dir = config.sample_dir
         self.nf = config.nf
         self.scale_factor = config.scale_factor
 
         if config.is_perceptual_oriented:
+            self.lr = config.p_lr
             self.content_loss_factor = config.p_content_loss_factor
             self.perceptual_loss_factor = config.p_perceptual_loss_factor
             self.adversarial_loss_factor = config.p_adversarial_loss_factor
             self.decay_batch_size = config.p_decay_batch_size
         else:
+            self.lr = config.g_lr
             self.content_loss_factor = config.g_content_loss_factor
             self.perceptual_loss_factor = config.g_perceptual_loss_factor
             self.adversarial_loss_factor = config.g_adversarial_loss_factor
             self.decay_batch_size = config.g_decay_batch_size
 
         self.build_model()
-        self.optimizer_generator = Adam(self.generator.parameters(), lr=config.lr, betas=(config.b1, config.b2),
+        self.optimizer_generator = Adam(self.generator.parameters(), lr=self.lr, betas=(config.b1, config.b2),
                                         weight_decay=config.weight_decay)
-        self.optimizer_discriminator = Adam(self.discriminator.parameters(), lr=config.lr, betas=(config.b1, config.b2),
+        self.optimizer_discriminator = Adam(self.discriminator.parameters(), lr=self.lr, betas=(config.b1, config.b2),
                                             weight_decay=config.weight_decay)
 
         self.lr_scheduler_generator = torch.optim.lr_scheduler.StepLR(self.optimizer_generator, self.decay_batch_size)
@@ -46,9 +46,9 @@ class Trainer:
 
     def train(self):
         total_step = len(self.data_loader)
-        adversarial_criterion = nn.BCELoss().to(self.device)
+        adversarial_criterion = nn.BCEWithLogitsLoss().to(self.device)
         content_criterion = nn.L1Loss().to(self.device)
-        perception_criterion = PerceptionLoss().to(self.device)
+        perception_criterion = PerceptualLoss().to(self.device)
         self.generator.train()
         self.discriminator.train()
 
@@ -60,16 +60,19 @@ class Trainer:
                 low_resolution = image['lr'].to(self.device)
                 high_resolution = image['hr'].to(self.device)
 
-                real_labels = torch.ones((high_resolution.size(0), 1), requires_grad=False).to(self.device)
-                fake_labels = torch.zeros((high_resolution.size(0), 1), requires_grad=False).to(self.device)
+                real_labels = torch.ones((high_resolution.size(0), 1)).to(self.device)
+                fake_labels = torch.zeros((high_resolution.size(0), 1)).to(self.device)
 
                 ##########################
                 #   training generator   #
                 ##########################
                 self.optimizer_generator.zero_grad()
                 fake_high_resolution = self.generator(low_resolution)
-                discriminator_rf = self.discriminator(high_resolution, fake_high_resolution)
-                discriminator_fr = self.discriminator(fake_high_resolution, high_resolution)
+
+                score_real = self.discriminator(high_resolution)
+                score_fake = self.discriminator(fake_high_resolution)
+                discriminator_rf = score_real - score_fake.mean()
+                discriminator_fr = score_fake - score_real.mean()
 
                 adversarial_loss_rf = adversarial_criterion(discriminator_rf, fake_labels)
                 adversarial_loss_fr = adversarial_criterion(discriminator_fr, real_labels)
@@ -82,39 +85,42 @@ class Trainer:
                                  perceptual_loss * self.perceptual_loss_factor + \
                                  content_loss * self.content_loss_factor
 
-                generator_loss.backward(retain_graph=True)
+                generator_loss.backward()
                 self.optimizer_generator.step()
 
                 ##########################
                 # training discriminator #
                 ##########################
+
                 self.optimizer_discriminator.zero_grad()
-                discriminator_rf = self.discriminator(high_resolution, fake_high_resolution)
-                discriminator_fr = self.discriminator(fake_high_resolution, high_resolution)
+
+                score_real = self.discriminator(high_resolution)
+                score_fake = self.discriminator(fake_high_resolution.detach())
+                discriminator_rf = score_real - score_fake.mean()
+                discriminator_fr = score_fake - score_real.mean()
 
                 adversarial_loss_rf = adversarial_criterion(discriminator_rf, real_labels)
                 adversarial_loss_fr = adversarial_criterion(discriminator_fr, fake_labels)
                 discriminator_loss = (adversarial_loss_fr + adversarial_loss_rf) / 2
 
-                discriminator_loss.backward(retain_graph=True)
+                discriminator_loss.backward()
                 self.optimizer_discriminator.step()
 
-                if step % 50 == 0:
+                self.lr_scheduler_generator.step()
+                self.lr_scheduler_discriminator.step()
+                if step % 10000 == 0:
                     print(f"[Epoch {epoch}/{self.num_epoch}] [Batch {step}/{total_step}] "
                           f"[D loss {discriminator_loss.item():.4f}] [G loss {generator_loss.item():.4f}] "
                           f"[adversarial loss {adversarial_loss.item() * self.adversarial_loss_factor:.4f}]"
                           f"[perceptual loss {perceptual_loss.item() * self.perceptual_loss_factor:.4f}]"
                           f"[content loss {content_loss.item() * self.content_loss_factor:.4f}]"
                           f"")
-                    if step % 100 == 0:
+                    if step % 10000 == 0:
                         result = torch.cat((high_resolution, fake_high_resolution), 2)
                         save_image(result, os.path.join(self.sample_dir, str(epoch), f"SR_{step}.png"))
 
             torch.save(self.generator.state_dict(), os.path.join(self.checkpoint_dir, f"generator_{epoch}.pth"))
             torch.save(self.discriminator.state_dict(), os.path.join(self.checkpoint_dir, f"discriminator_{epoch}.pth"))
-
-            self.lr_scheduler_generator.step()
-            self.lr_scheduler_discriminator.step()
 
     def build_model(self):
         self.generator = ESRGAN(3, 3, 64, scale_factor=self.scale_factor).to(self.device)
