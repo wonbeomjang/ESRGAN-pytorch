@@ -27,8 +27,8 @@ cd datasets
 python prepare_datasets.py
 cd ..
 ```
- ###custom dataset
-Make dataset like this
+### custom dataset
+Make dataset like this; size of hr is 128x128 ans lr is 32x32
 ```
 datasets/
     hr/
