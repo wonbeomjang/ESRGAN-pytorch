@@ -25,6 +25,7 @@ The sample is still being imported during the training, and the completeness is 
 ```bash
 cd datasets
 python prepare_datasets.py
+cd ..
 ```
  ###custom dataset
 Make dataset like this
@@ -44,4 +45,9 @@ datasets/
         0003.png
         0004.png
         ...
+```
+
+run main file
+```bash
+python main.py
 ```

@@ -108,14 +108,14 @@ class Trainer:
 
                 self.lr_scheduler_generator.step()
                 self.lr_scheduler_discriminator.step()
-                if step % 10000 == 0:
+                if step % 1000 == 0:
                     print(f"[Epoch {epoch}/{self.num_epoch}] [Batch {step}/{total_step}] "
                           f"[D loss {discriminator_loss.item():.4f}] [G loss {generator_loss.item():.4f}] "
                           f"[adversarial loss {adversarial_loss.item() * self.adversarial_loss_factor:.4f}]"
                           f"[perceptual loss {perceptual_loss.item() * self.perceptual_loss_factor:.4f}]"
                           f"[content loss {content_loss.item() * self.content_loss_factor:.4f}]"
                           f"")
-                    if step % 10000 == 0:
+                    if step % 5000 == 0:
                         result = torch.cat((high_resolution, fake_high_resolution), 2)
                         save_image(result, os.path.join(self.sample_dir, str(epoch), f"SR_{step}.png"))
 

@@ -3,7 +3,7 @@ import argparse
 parser = argparse.ArgumentParser()
 
 parser.add_argument('--image_size', type=int, default=128, help='the height / width of the input image to network')
-parser.add_argument('--batch_size', type=int, default=8, help='batch size')
+parser.add_argument('--batch_size', type=int, default=16, help='batch size')
 parser.add_argument('--sample_batch_size', type=int, default=1, help='sample batch size')
 parser.add_argument('--num_epoch', type=int, default=400, help='number of epochs to train for')
 parser.add_argument('--epoch', type=int, default=0, help='epochs in current train')
@@ -39,7 +39,7 @@ parser.add_argument('--g_perceptual_loss_factor', type=float, default=1, help='p
 parser.add_argument('--g_adversarial_loss_factor', type=float, default=5e-3, help='adversarial loss factor when '
                                                                                   'training generator oriented')
 
-parser.add_argument('--is_perceptual_oriented', type=bool, default=False, help='')
+parser.add_argument('--is_perceptual_oriented', type=bool, default=True, help='')
 
 url = ['http://data.vision.ee.ethz.ch/cvl/DIV2K/DIV2K_train_HR.zip',
        'http://cv.snu.ac.kr/research/EDSR/Flickr2K.tar'
