@@ -41,7 +41,8 @@ datasets/
 ## how to train
 run main file
 ```bash
-python main.py
+python main.py --is_perceptual_oriented false --num_epoch=10
+python main.py --is_perceptual_oriented true --epoch=10
 ```
 
 ## Sample
