@@ -51,11 +51,5 @@ python main.py --is_perceptual_oriented False --epoch=10
 ```
 
 ## Sample
-From the top is a low resolution image, a restored high resolution image, and ground truth.  
-
-The sample is still being imported during the training, and the completeness is low.  
-
- ![Sample](./image/sample1.png)
- ![Sample](./image/sample2.png)
- ![Sample](./image/sample3.png)
- 
+<img src="image/lr.png" width="200">
+<img src="image/hr.png" width="800">
