@@ -51,5 +51,8 @@ python main.py --is_perceptual_oriented False --epoch=10
 ```
 
 ## Sample
+we are in training on this code and train is not complete yet.
+this is intermediate result.
+
 <img src="image/lr.png" width="200">
 <img src="image/hr.png" width="800">
