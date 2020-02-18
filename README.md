@@ -11,6 +11,11 @@ This repository implements a deep-running model for super resolution.
  [Basic block]  
  ![BasicBlock](./image/basicBlock.PNG)
  
+ ### Test Code
+ ```bash
+test.py --lr_dir LR_DIR --sr_dir SR_DIR
+```
+ 
  ## Prepare dataset
  ### Use Flicker2K and DIV2K
 ```bash
