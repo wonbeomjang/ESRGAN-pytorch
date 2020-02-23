@@ -13,7 +13,7 @@ This repository implements a deep-running model for super resolution.
  
  ### Test Code
  ```bash
-test.py --lr_dir LR_DIR --sr_dir SR_DIR
+python test.py --lr_dir LR_DIR --sr_dir SR_DIR
 ```
  
  ## Prepare dataset
