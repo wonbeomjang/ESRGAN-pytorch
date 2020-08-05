@@ -27,13 +27,13 @@ class Trainer:
             self.content_loss_factor = config.p_content_loss_factor
             self.perceptual_loss_factor = config.p_perceptual_loss_factor
             self.adversarial_loss_factor = config.p_adversarial_loss_factor
-            self.decay_batch_size = config.p_decay_batch_size
+            self.decay_iter = config.p_decay_iter
         else:
             self.lr = config.g_lr
             self.content_loss_factor = config.g_content_loss_factor
             self.perceptual_loss_factor = config.g_perceptual_loss_factor
             self.adversarial_loss_factor = config.g_adversarial_loss_factor
-            self.decay_batch_size = config.g_decay_batch_size
+            self.decay_iter = config.g_decay_iter
 
         self.build_model()
         self.optimizer_generator = Adam(self.generator.parameters(), lr=self.lr, betas=(config.b1, config.b2),
@@ -41,8 +41,8 @@ class Trainer:
         self.optimizer_discriminator = Adam(self.discriminator.parameters(), lr=self.lr, betas=(config.b1, config.b2),
                                             weight_decay=config.weight_decay)
 
-        self.lr_scheduler_generator = torch.optim.lr_scheduler.StepLR(self.optimizer_generator, self.decay_batch_size)
-        self.lr_scheduler_discriminator = torch.optim.lr_scheduler.StepLR(self.optimizer_discriminator, self.decay_batch_size)
+        self.lr_scheduler_generator = torch.optim.lr_scheduler.MultiStepLR(self.optimizer_generator, self.decay_iter)
+        self.lr_scheduler_discriminator = torch.optim.lr_scheduler.MultiStepLR(self.optimizer_discriminator, self.decay_iter)
 
     def train(self):
         total_step = len(self.data_loader)
